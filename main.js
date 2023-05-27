@@ -29,6 +29,7 @@ var favoritesBottomContainer = document.querySelector(
   '#favorites-bottom-container',
 );
 
+
 // EVENT LISTENERS
 
 letsCookBtn.onclick = (event) => {
@@ -71,7 +72,7 @@ viewFavorites.onclick = () => {
 
 favoritesBottomContainer.onclick = (event) => {
   if (event.target.tagName === 'BUTTON') {
-    removeFromFavoritesArray(event);
+    removeFromLocalStorage(event);
     removeMealFromDOM(event);
   }
 }
@@ -85,7 +86,6 @@ backToMain.onclick = toggleFavorites;
 // FUNCTIONS AND HANDLERS
 var currentMeal;
 var currentMealString;
-var favoriteMeals = [];
 
 function getRandomIndex(array) {
   return Math.floor(Math.random() * array.length);
@@ -171,35 +171,48 @@ function renderMeal() {
 
 function addToFavoriteMeals(meal) {
   if (favoriteMeals.length === 0) {
-    favoriteMeals.push(meal);
+    localStorage.setItem(`${meal.id}`, JSON.stringify(meal));
     return;
   }
-  for (var i = 0; i < favoriteMeals.length; i++)
+  for (var i = 0; i < localStorage.length; i++)
     if (favoriteMeals[i].mealString === meal.mealString) {
       return;
     }
-  favoriteMeals.push(meal);
+  localStorage.setItem(`${meal.id}`, JSON.stringify(meal));
+}
+
+function getLocalStorageKeys() {
+  return Object.keys(localStorage).sort();
 }
 
 function renderFavoriteMeals() {
+  var key, meal;
+  var localStorageKeys = getLocalStorageKeys();
+  
   favoritesBottomContainer.innerHTML = '';
 
-  for (var i = 0; i < favoriteMeals.length; i++) {
+  for (var i = 0; i < localStorageKeys.length; i++) {
+    if (localStorageKeys[i] === 'loglevel') {
+      continue;
+    }
+    key = localStorageKeys[i];
+    meal = JSON.parse(localStorage.getItem(key));
     favoritesBottomContainer.innerHTML += `
-      <section id="${favoriteMeals[i].id}" class="favorite-meal-container">
-        <p>${favoriteMeals[i].mealString}</p>
+      <section id="${meal.id}" class="favorite-meal-container">
+        <p>${meal.mealString}</p>
         <button class="button remove-button">REMOVE</button>
       </section>
     `;
   }
 }
 
-function removeFromFavoritesArray(event) {
+function removeFromLocalStorage(event) {
   var meal = event.target.closest('section');
+  var localStorageKeys = getLocalStorageKeys();
 
-  for (var i = 0; i < favoriteMeals.length; i++) {
-    if (favoriteMeals[i].id === parseInt(meal.id)) {
-      favoriteMeals.splice(i, 1);
+  for (var i = 0; i < localStorageKeys.length; i++) {
+    if (localStorageKeys[i] === meal.id) {
+      localStorage.removeItem(localStorageKeys[i])
     }
   }
 }
