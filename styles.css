@@ -197,6 +197,7 @@ label input {
 }
 
 #back-to-main {
+  background-color: var(--grey);
   margin-right: auto;
 }
 
