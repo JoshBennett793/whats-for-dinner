@@ -4,19 +4,30 @@ import { mains } from './data/mains.js';
 import { desserts } from './data/desserts.js';
 
 // QUERY SELECTORS
+var mainElement = document.querySelector('main');
+var header = document.querySelector('header');
 
 // MEAL CARD
 var cookpot = document.querySelector('#cookpot');
 var mealCardSpan = document.querySelector('#meal-card span');
 var mealSuggestion = document.querySelector('#generated-meal');
+var favoriteBtn = document.querySelector('#favorite');
 
 // BUTTONS
 var letsCookBtn = document.querySelector('#form-submit-button');
+var viewFavorites = document.querySelector('#view-favorites');
+var backToMain = document.querySelector('#back-to-main');
 
 // CHECKBOXES
 var entireMealCB = document.querySelector('input[name=meal]');
 var sideMainDessertCheckBoxes = document.querySelectorAll('.cb');
 var [sideCB, mainCB, dessertCB] = [...sideMainDessertCheckBoxes];
+
+// FAVORITES CONTAINER
+var favoritesContainer = document.querySelector('.favorite-container');
+var favoritesBottomContainer = document.querySelector(
+  '#favorites-bottom-container',
+);
 
 // EVENT LISTENERS
 
@@ -49,8 +60,32 @@ for (var i = 0; i < sideMainDessertCheckBoxes.length; i++) {
   });
 }
 
+favoriteBtn.onclick = () => {
+  addToFavoriteMeals(currentMeal);
+};
+
+viewFavorites.onclick = () => {
+  toggleFavorites();
+  renderFavoriteMeals();
+};
+
+favoritesBottomContainer.onclick = (event) => {
+  if (event.target.tagName === 'BUTTON') {
+    removeFromFavoritesArray(event);
+    removeMealFromDOM(event);
+  }
+}
+
+backToMain.onclick = toggleFavorites;
+
+// use event delegation on the favorites-bottom-container to listen for the event 
+// className that matches the button class name
+// if it is, then invoke the removeFromArray function
+
 // FUNCTIONS AND HANDLERS
 var currentMeal;
+var currentMealString;
+var favoriteMeals = [];
 
 function getRandomIndex(array) {
   return Math.floor(Math.random() * array.length);
@@ -58,6 +93,7 @@ function getRandomIndex(array) {
 
 function createSuggestion(side, main, dessert) {
   return {
+    id: Date.now(),
     side: side ?? '',
     main: main ?? '',
     dessert: dessert ?? '',
@@ -108,24 +144,72 @@ function returnRequestedMeal(suggestion) {
   var entireMeal = entireMealCB.checked;
 
   if (side) {
-    return `${suggestion.side}!`;
+    suggestion.mealString = `${suggestion.side}!`;
   } else if (main) {
-    return `${suggestion.main}!`;
+    suggestion.mealString = `${suggestion.main}!`;
   } else if (dessert) {
-    return `${suggestion.dessert}!`;
+    suggestion.mealString = `${suggestion.dessert}!`;
   } else if (sideAndMain) {
-    return `${suggestion.main} with a side of ${suggestion.side}!`;
+    suggestion.mealString = `${suggestion.main} with a side of ${suggestion.side}!`;
   } else if (mainAndDessert) {
-    return `${suggestion.main} and ${suggestion.dessert} for dessert!`;
+    suggestion.mealString = `${suggestion.main} for the main course and ${suggestion.dessert} for dessert!`;
   } else if (sideAndDessert) {
-    return `${suggestion.side} as a side and ${suggestion.dessert} for dessert!`;
+    suggestion.mealString = `${suggestion.side} as a side and ${suggestion.dessert} for dessert!`;
   } else if (entireMeal) {
-    return `${suggestion.main} with a side of ${suggestion.side} and ${suggestion.dessert} for dessert!`;
+    suggestion.mealString = `${suggestion.main} with a side of ${suggestion.side} and ${suggestion.dessert} for dessert!`;
   }
+
+  return suggestion.mealString;
 }
 
 function renderMeal() {
-  var meal = returnRequestedMeal(returnRandomMeal());
+  currentMeal = returnRandomMeal();
+  currentMealString = returnRequestedMeal(currentMeal);
 
-  mealSuggestion.innerText = meal;
+  mealSuggestion.innerText = currentMealString;
+}
+
+function addToFavoriteMeals(meal) {
+  if (favoriteMeals.length === 0) {
+    favoriteMeals.push(meal);
+    return;
+  }
+  for (var i = 0; i < favoriteMeals.length; i++)
+    if (favoriteMeals[i].mealString === meal.mealString) {
+      return;
+    }
+  favoriteMeals.push(meal);
+}
+
+function renderFavoriteMeals() {
+  favoritesBottomContainer.innerHTML = '';
+
+  for (var i = 0; i < favoriteMeals.length; i++) {
+    favoritesBottomContainer.innerHTML += `
+      <section id="${favoriteMeals[i].id}" class="favorite-meal-container">
+        <p>${favoriteMeals[i].mealString}</p>
+        <button class="button remove-button">REMOVE</button>
+      </section>
+    `;
+  }
+}
+
+function removeFromFavoritesArray(event) {
+  var meal = event.target.closest('section');
+
+  for (var i = 0; i < favoriteMeals.length; i++) {
+    if (favoriteMeals[i].id === parseInt(meal.id)) {
+      favoriteMeals.splice(i, 1);
+    }
+  }
+}
+
+function removeMealFromDOM(event) {
+  event.target.closest('section').remove();
+}
+
+function toggleFavorites() {
+  toggleClass(favoritesContainer, 'hidden');
+  toggleClass(header, 'hidden');
+  toggleClass(mainElement, 'hidden');
 }
