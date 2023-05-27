@@ -211,8 +211,6 @@ function removeFromLocalStorage(event) {
   var localStorageKeys = getLocalStorageKeys();
 
   for (var i = 0; i < localStorageKeys.length; i++) {
-    console.log('localStorage key: ', localStorageKeys[i]);
-    console.log('meal id: ', meal.id);
     if (localStorageKeys[i] === meal.id) {
       localStorage.removeItem(localStorageKeys[i])
     }
