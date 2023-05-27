@@ -181,9 +181,13 @@ function addToFavoriteMeals(meal) {
   localStorage.setItem(`${meal.id}`, JSON.stringify(meal));
 }
 
+function getLocalStorageKeys() {
+  return Object.keys(localStorage).sort();
+}
+
 function renderFavoriteMeals() {
   var key, meal;
-  var localStorageKeys = Object.keys(localStorage).sort();
+  var localStorageKeys = getLocalStorageKeys();
   
   favoritesBottomContainer.innerHTML = '';
 
@@ -204,10 +208,13 @@ function renderFavoriteMeals() {
 
 function removeFromLocalStorage(event) {
   var meal = event.target.closest('section');
+  var localStorageKeys = getLocalStorageKeys();
 
-  for (var i = 0; i < favoriteMeals.length; i++) {
-    if (favoriteMeals[i].id === parseInt(meal.id)) {
-      favoriteMeals.splice(i, 1);
+  for (var i = 0; i < localStorageKeys.length; i++) {
+    console.log('localStorage key: ', localStorageKeys[i]);
+    console.log('meal id: ', meal.id);
+    if (localStorageKeys[i] === meal.id) {
+      localStorage.removeItem(localStorageKeys[i])
     }
   }
 }
